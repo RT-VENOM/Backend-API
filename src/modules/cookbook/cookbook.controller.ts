@@ -104,3 +104,57 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
     res.status(401).json({ error: 'Invalid or expired session' });
   }
 };
+
+
+// src/modules/cookbook/cookbook.controller.ts
+
+export const login = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // 1. Validate the incoming request body
+    const parsed = AuthSchema.parse(req.body);
+    const { username, password } = parsed;
+
+    // 2. Look for the user in the database
+    const user = await CookbookUser.findOne({ username: username.toLowerCase() });
+    
+    // SECURITY: Don't specify if it was the username or password that failed
+    if (!user) {
+      res.status(401).json({ error: 'Invalid credentials' });
+      return;
+    }
+
+    // 3. Verify the password mathematically
+    const isPasswordValid = await argon2.verify(user.passwordHash, password);
+    
+    if (!isPasswordValid) {
+      res.status(401).json({ error: 'Invalid credentials' });
+      return;
+    }
+
+    // 4. Generate the session token
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      process.env.JWT_SECRET as string,
+      { expiresIn: '7d' } 
+    );
+
+    // 5. Attach the secure cookie
+    res.cookie('cookbook_session', token, {
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+    });
+
+    // 6. Send success response back to React
+    res.status(200).json({
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        username: user.username,
+      },
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message || 'Login failed' });
+  }
+};
