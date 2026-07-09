@@ -86,16 +86,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 // src/modules/cookbook/cookbook.controller.ts
-
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    // 1. Validate the incoming request body
-    const parsed = AuthSchema.parse(req.body);
-    const { username, password } = parsed;
+    // 1. Validate the incoming request body exactly like the register route
+    const parsed = AuthSchema.parse({ body: req.body });
+    const { username, password } = parsed.body;
 
     // 2. Look for the user in the database
     const user = await CookbookUser.findOne({ username: username.toLowerCase() });
     
+    // ... the rest of your login logic stays exactly the same
     // SECURITY: Don't specify if it was the username or password that failed
     if (!user) {
       res.status(401).json({ error: 'Invalid credentials' });
