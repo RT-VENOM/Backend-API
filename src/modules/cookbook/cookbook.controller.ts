@@ -70,10 +70,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain:
-        process.env.NODE_ENV === "production"
-          ? ".cookbookguide.dpdns.org"
-          : "localhost",
+      domain: ".cookbookguide.dpdns.org",
     });
 
     res.status(201).json({
@@ -129,10 +126,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain:
-        process.env.NODE_ENV === "production"
-          ? ".cookbookguide.dpdns.org"
-          : "localhost",
+      domain: ".cookbookguide.dpdns.org",
     });
 
     // 6. Send success response back to React
